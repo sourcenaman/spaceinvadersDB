@@ -31,7 +31,7 @@ def get_db():
 
 @app.get("/")
 def read_scores(db: Session = Depends(get_db)):
-    scores = db.query(Score).order_by(Score.score.desc())[:5]
+    scores = db.query(Score).order_by(Score.score.desc(), Score.id.desc())[:5]
     return scores
 
 @app.get("/all/")
