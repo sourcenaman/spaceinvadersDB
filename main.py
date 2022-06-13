@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, constr
+from sqlalchemy import false, true
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -31,10 +32,13 @@ def get_db():
 @app.get("/")
 def read_scores(db: Session = Depends(get_db)):
     scores = db.query(Score).order_by(Score.score.desc())[:5]
-    # scores = db.query(Score).all()
-    print(scores)
     return scores
-    return {"Hello": "World"}
+
+@app.get("/all/")
+async def read_scores(db: Session = Depends(get_db)):
+    query = db.query(Score).order_by(Score.score.desc())
+    scores = db.execute(query).fetchall()
+    return scores
 
 @app.post("/score/")
 def write_score(score_data: ScoreData, db: Session = Depends(get_db)):
@@ -44,3 +48,17 @@ def write_score(score_data: ScoreData, db: Session = Depends(get_db)):
     db.add(score)
     db.commit()
     return True
+
+@app.get("/reset/")
+def write_score(db: Session = Depends(get_db)):
+    db.execute('''DELETE FROM scores''')
+    db.commit()
+    return True
+
+@app.get("/eligible/")
+def write_score(db: Session = Depends(get_db), points: int = 200):
+    scores = db.query(Score).filter(Score.score > points).count()
+    if scores < 5:
+        return true
+    else:
+        return false
