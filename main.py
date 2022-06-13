@@ -59,6 +59,6 @@ def write_score(db: Session = Depends(get_db)):
 def write_score(db: Session = Depends(get_db), points: int = 200):
     scores = db.query(Score).filter(Score.score > points).count()
     if scores < 5:
-        return true
+        return True
     else:
-        return false
+        return False
